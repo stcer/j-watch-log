@@ -14,7 +14,7 @@ foreach ($composerAutoload as $autoload) {
     echo $autoload . PHP_EOL;
     if (file_exists($autoload)) {
         require($autoload);
-        $vendorPath = dirname($autoload);
+        $vendorPath = realpath(dirname($autoload));
         break;
     }
 }
