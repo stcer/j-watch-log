@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello websocket</title>
+
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" />
+    <style>
+        li{ list-style: none; }
+        .user { color: #999; }
+        .me{ color: green; }
+        .self{ text-align: right }
+        .private { color: blue; }
+        #messages {
+            height: 350px;
+            overflow-y: scroll;
+            padding:10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+
+    <div id="app">
+    <h3>WS test</h3>
+    <p>{{file}}</p>
+    <div class="row">
+        <div class="col-md-9">
+            <pre id="messages"
+                 style="margin:12px 0; width: 100%"><template v-for="item in items">{{item.msg}}</template ></pre>
+        </div>
+
+        <div class="col-md-3">
+            <li v-for="file in files" @click="selFile(file)">
+                <span>{{file}}</span>
+            </li>
+        </div>
+    </div>
+    </div>
+
+</div>
+</div>
+</div>
+
+<script type="text/javascript" src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="//cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
+
+<script src="lib/jquery.json.js"></script>
+<script src="lib/socket.js"></script>
+<script src="lib/event.js"></script>
+
+<script>
+
+var JChat =  function(address) {
+    this.conn = new JSocket(address, this);
+    this.data = {
+      messages : [],
+      files : [],
+      file : '',
+      index: 0
+    };
+};
+
+$.extend(JChat.prototype, (new JEvent()), {
+  onOpen : function(e) {
+    console.log('connected');
+  },
+
+  addMessage: function(data, type){
+    if(type)
+        data.type = type;
+
+    if(data.type === 'files'){
+      this.data.files = data.files;
+    } else {
+      if(!data.index){
+        data.index = 0;
+      }
+      this.data.messages.push(data);
+      this.trigger('message.add', data);
+    }
+  },
+
+  onMessage : function(data, e) {
+    this.addMessage(data);
+  },
+
+  onClose : function(e) {
+    this.addMessage('closed', 'cmd');
+  }
+});
+
+// main
+var chat = new JChat('ws://192.168.0.175:9504');
+chat.on('message.add', function(){
+  // for vue dom
+  setTimeout(function(){
+    var elBox = $('#messages');
+    elBox.scrollTop(elBox[0].scrollHeight - elBox.height() + 250);
+  }, 100);
+});
+
+var vm = new Vue({
+  el:'#app',
+  data : chat.data,
+  methods : {
+    selFile : function(file){
+      console.log(file);
+      this.file = file;
+      this.index = this.findIndex(file);
+    },
+
+    findIndex: function(file){
+      for(var i =0; i < this.files.length; i++){
+        if(file === this.files[i]){
+          return i;
+        }
+      }
+      return 0;
+    }
+  },
+  computed: {
+    items: function () {
+      var that = this;
+      return this.messages.filter(function (item) {
+        console.log(item.index);
+        console.log(that.index);
+        return item.index == that.index;
+      })
+    }
+  }
+});
+</script>
+
+</body>
+</html>

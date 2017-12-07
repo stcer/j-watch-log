@@ -1,0 +1,44 @@
+{
+    "name": "stcer/j-watchLog",
+
+    "authors": [
+        {
+            "name": "stcer",
+            "email": "7443930@qq.com"
+        }
+    ],
+
+    "minimum-stability" : "dev",
+
+    "autoload": {
+        "psr-4": {
+            "j\\watchLog\\": "src/"
+        }
+    },
+
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "http://packages.9z.cn"
+        },
+        {
+            "type": "composer",
+            "url": "https://packagist.phpcomposer.com"
+        },
+        {"packagist": false}
+    ],
+
+    "require": {
+        "stcer/j-http" : "dev-master"
+    },
+
+    "require-dev" : {
+        "stcer/ide-doc" : "*"
+    },
+
+    "config" : {
+        "secure-http" : false
+    },
+
+    "bin" : ["bin/watchLogServer.php"]
+}
