@@ -2,10 +2,18 @@
 var JChat =  function(address) {
   this.conn = new JSocket(address, this);
   this.data = {
-    messages : [],
+    messages : [
+      [], [], [], [], [],
+      [], [], [], [], [],
+      [], [], [], [], []
+    ],
     files : [],
-    file : '',
-    index: 0
+
+    windows: 1,
+    crtWindow: 0,
+    winMap:[
+      0, 1, 2, 3
+    ]
   };
 };
 
@@ -24,7 +32,7 @@ $.extend(JChat.prototype, (new JEvent()), {
       if(!data.index){
         data.index = 0;
       }
-      this.data.messages.push(data);
+      this.data.messages[data.index].push(data);
       this.trigger('message.add', data);
     }
   },
@@ -43,7 +51,7 @@ var chat = new JChat('ws://' + location.host);
 var gotoBottom = function(){
   // for vue dom
   setTimeout(function(){
-    var elBox = $('#messages');
+    var elBox = $('.content');
     elBox.scrollTop(elBox[0].scrollHeight - elBox.height() + 250);
   }, 100);
 };
@@ -54,20 +62,18 @@ var vm = new Vue({
   el:'#app',
   data : chat.data,
   methods : {
-    selFile : function(file){
-      console.log(file);
-      this.file = file;
-      this.index = this.findIndex(file);
+    selFile : function(index){
+      Vue.set(this.winMap, this.crtWindow, index)
+      console.log(this.winMap);
       gotoBottom();
     },
 
-    findIndex: function(file){
-      for(var i =0; i < this.files.length; i++){
-        if(file === this.files[i]){
-          return i;
-        }
-      }
-      return 0;
+    setWindows: function(n){
+      this.windows = n;
+    },
+
+    selWindow: function(index){
+      this.crtWindow = index;
     }
   },
 
@@ -75,9 +81,7 @@ var vm = new Vue({
     items: function () {
       var that = this;
       return this.messages.filter(function (item) {
-        console.log(item.index);
-        console.log(that.index);
-        return item.index == that.index;
+        return item.index === that.index;
       })
     }
   }
