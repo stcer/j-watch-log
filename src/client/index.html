@@ -46,7 +46,7 @@
 
         <div class="contents">
         <div v-for="(index, key) in winMap"
-             v-if="key < windows && key > files.length" :class="{col: windows > 1}">
+             v-if="key < windows && key < files.length" :class="{col: windows > 1}">
 
             <p>{{files[index]}}</p>
 

@@ -87,8 +87,3 @@ var vm = new Vue({
     }
   }
 });
-
-chat.on('files.change', function(){
-  // @see https://cn.vuejs.org/v2/guide/list.html#注意事项
-  vm.files.splice(vm.files.length);
-});
