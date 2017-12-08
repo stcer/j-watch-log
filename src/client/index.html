@@ -21,6 +21,8 @@
             height: 350px;
             overflow-y: scroll;
             padding:10px;
+            margin:12px 0;
+            width: 100%
         }
         .col {
             width: 49%;
@@ -34,7 +36,7 @@
 <div class="row">
 <div class="col-md-12">
 
-    <h3>WS test</h3>
+    <h3>Watch log</h3>
     <div id="app">
         <p>
         <template  v-for="n in [1, 2, 4]">
@@ -43,11 +45,13 @@
         </p>
 
         <div class="contents">
-        <div v-for="(index, key) in winMap" v-if="key < windows" :class="{col: windows > 1}">
+        <div v-for="(index, key) in winMap"
+             v-if="key < windows && key > files.length" :class="{col: windows > 1}">
+
             <p>{{files[index]}}</p>
 
-            <pre class="content" style="margin:12px 0; width: 100%" @click="selWindow(key)">
-            <template v-for="item in messages[index]">{{item.msg}}</template >
+            <pre class="content"
+                 @click="selWindow(key)"><template v-for="item in messages[index]">{{item.msg}}</template >
             </pre>
         </div>
         </div>

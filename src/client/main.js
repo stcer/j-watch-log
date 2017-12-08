@@ -7,6 +7,7 @@ var JChat =  function(address) {
       [], [], [], [], [],
       [], [], [], [], []
     ],
+
     files : [],
 
     windows: 1,
@@ -28,6 +29,7 @@ $.extend(JChat.prototype, (new JEvent()), {
 
     if(data.type === 'files'){
       this.data.files = data.files;
+      this.trigger('files.change', data);
     } else {
       if(!data.index){
         data.index = 0;
@@ -64,7 +66,6 @@ var vm = new Vue({
   methods : {
     selFile : function(index){
       Vue.set(this.winMap, this.crtWindow, index)
-      console.log(this.winMap);
       gotoBottom();
     },
 
@@ -85,4 +86,9 @@ var vm = new Vue({
       })
     }
   }
+});
+
+chat.on('files.change', function(){
+  // @see https://cn.vuejs.org/v2/guide/list.html#注意事项
+  vm.files.splice(vm.files.length);
 });
