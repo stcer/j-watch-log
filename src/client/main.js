@@ -10,7 +10,7 @@ var JChat =  function(address) {
 
     files : [],
 
-    windows: 1,
+    windows: 2,
     crtWindow: 0,
     winMap:[
       0, 1, 2, 3
@@ -54,7 +54,9 @@ var gotoBottom = function(){
   // for vue dom
   setTimeout(function(){
     var elBox = $('.content');
-    elBox.scrollTop(elBox[0].scrollHeight - elBox.height() + 250);
+    elBox.each(function(index, el){
+        $(this).scrollTop(this.scrollHeight, $(this).height() + 250)
+    });
   }, 100);
 };
 
