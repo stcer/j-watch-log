@@ -91,7 +91,7 @@ $.extend(JChat.prototype, (new JEvent()), {
 });
 
 // main
-var chat = new JChat('ws://192.168.0.175:9504');
+var chat = new JChat('ws://' + location.host);
 chat.on('message.add', function(){
   // for vue dom
   setTimeout(function(){

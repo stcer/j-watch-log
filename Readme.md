@@ -5,7 +5,7 @@
 ## install
 
 ```
-composer install stcer/j-watchLog:dev-master
+composer install stcer/j-watch-log:*
 ```
 
 ## config
@@ -30,8 +30,11 @@ php vendor/bin/watchLogServer.php
 
 # 以守护进程运行
 php vendor/bin/watchLogServer.php -d
+
+# 结速进程
+# 自行kill主进程id
 ```
 
-## 结速进程
+## 访问
 
-自行kill主进程id
+http://host:port

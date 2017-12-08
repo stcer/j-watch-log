@@ -11,7 +11,6 @@ $composerAutoload = [
     __DIR__ . '/../../../autoload.php', // installed as a composer binary
     ];
 foreach ($composerAutoload as $autoload) {
-    echo $autoload . PHP_EOL;
     if (file_exists($autoload)) {
         require($autoload);
         $vendorPath = realpath(dirname($autoload));
