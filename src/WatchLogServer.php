@@ -15,6 +15,9 @@ class WatchLogServer extends Server{
 
     protected $watchLog = [];
 
+    /**
+     * @param $file
+     */
     function addWatchLog($file){
         $this->watchLog[] = $file;
     }
@@ -46,37 +49,24 @@ class WatchLogServer extends Server{
         return new swoole_websocket_server($this->ip, $this->port);
     }
 
-    /**
-     * @var swoole_process[]
-     */
-    protected $process = [];
-
 	/**
 	 * @param \swoole_http_server $server
      * @throws
 	 */
 	protected function onServerCreate($server){
-		parent::onServerCreate($server);
+        if(!$this->watchLog){
+            throw new \Exception("Watch log file is empty");
+        }
+
+        parent::onServerCreate($server);
 		$this->setOption('dispatch_mode', 2);
-
-		if(!$this->watchLog){
-		    throw new \Exception("Watch log file is empty");
-        }
-
-
-        // add process
-        foreach($this->watchLog as $log){
-            if(!file_exists($log)){
-                throw new \Exception("Watch log file not found");
-            }
-            $process = new swoole_process(function($process) use($log) {
-                $process->exec("/usr/bin/tail", array("-f", $log));
-            }, true);
-
-            $server->addProcess($process);
-            $this->process[] = [$process, $log];
-        }
+		$this->setOption('worker_num', 1);
 	}
+
+    /**
+     * @var swoole_process[]
+     */
+    protected $works = [];
 
     /**
      * @param swoole_websocket_server $serv
@@ -86,8 +76,17 @@ class WatchLogServer extends Server{
             return;
         }
 
-        foreach($this->process as $key => $process){
-            list($work, $log) = $process;
+        foreach($this->watchLog as $key => $log){
+            $work = new swoole_process(function($process) use($log) {
+                $process->exec("/usr/bin/tail", array("-f", $log));
+            }, true);
+
+            $pid = $work->start();
+            $this->works[$pid] = [$work, $key];
+        }
+
+        foreach($this->works as $work){
+            list($work, $key) = $work;
             swoole_event_add($work->pipe, function($pipe) use($work, $key){
                 $this->log("Read process data");
                 $data = $work->read();
@@ -111,6 +110,7 @@ class WatchLogServer extends Server{
 
 
     protected $users = [];
+    protected $userLogs = [];
 
     /**
      * @param swoole_websocket_server $server
@@ -135,6 +135,25 @@ class WatchLogServer extends Server{
      * @param $frame
      */
     function onMessage($server, $frame){
+        $data = $this->unpack($frame->data);
+        if(!$data){
+            return;
+        }
+
+        if($data['cmd'] == 'close'){
+            // todo close all user's log file
+            $this->send($frame->fd, ['msg' => 'close all']);
+        } elseif($data['cmd'] == 'add'){
+            // todo check unique
+            $file = $data['file'];
+            if(!file_exists($file)){
+                $this->send($frame->fd, ['msg' => 'file not found, cwd:' . getcwd(), 'type' => 'error']);
+            } else {
+                // todo add user's watch
+                $this->userLogs[] = $file;
+                $this->send($frame->fd, ['files' => array_merge($this->watchLog, $this->userLogs), 'type' => 'files']);
+            }
+        }
     }
 
     /**

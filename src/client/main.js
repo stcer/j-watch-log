@@ -14,7 +14,9 @@ var JChat =  function(address) {
     crtWindow: 0,
     winMap:[
       0, 1, 2, 3
-    ]
+    ],
+
+    input: ''
   };
 };
 
@@ -77,6 +79,10 @@ var vm = new Vue({
 
     selWindow: function(index){
       this.crtWindow = index;
+    },
+
+    add: function(){
+      chat.conn.send({cmd : 'add', 'file': this.input}, true);
     }
   },
 
