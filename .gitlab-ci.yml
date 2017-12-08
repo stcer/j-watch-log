@@ -1,6 +1,5 @@
 build-composer-package:
     script:
-#        - sh -x /usr/local/sbin/buildComposerRepos $(composer info -N)
         - sh -x /usr/local/sbin/buildComposerRepos $(composer info -s | awk '$1=="name"{print $3}')
     stage: build
     tags:
