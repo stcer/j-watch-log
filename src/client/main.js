@@ -3,6 +3,7 @@ var JChat =  function(address) {
   this.conn = new JSocket(address, this);
   this.data = {
     messages : [
+      // 消息索引组件
       [], [], [], [], [],
       [], [], [], [], [],
       [], [], [], [], []
@@ -13,9 +14,13 @@ var JChat =  function(address) {
     windows: 2,
     crtWindow: 0,
     winMap:[
+      // 窗口内容索引号, 与消息索引关联
       0, 1, 2, 3
     ],
-
+    winWidthFlag: [
+      // 窗口宽度开关
+      0, 0, 0, 0
+    ],
     input: ''
   };
 };
@@ -65,7 +70,7 @@ var gotoBottom = function(){
 chat.on('message.add', gotoBottom);
 
 $(document).keydown(function(event){
-  if (event.which == 13 ) {
+  if (event.which === 13 ) {
       event.preventDefault();
       chat.addMessage({msg: "\n"});
   }
@@ -107,6 +112,10 @@ var vm = new Vue({
 
     newline: function () {
       chat.addMessage({msg: "\n"});
+    },
+
+    switchWidth: function(key){
+      Vue.set(this.winWidthFlag, key, !this.winWidthFlag[key]);
     }
   },
 

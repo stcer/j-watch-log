@@ -18,7 +18,7 @@ class WatchLogServer extends Server{
     /**
      * @var swoole_process[]
      */
-    protected $works = [];
+    protected $process = [];
 
     /**
      * @var array
@@ -85,10 +85,10 @@ class WatchLogServer extends Server{
         foreach($this->logs as $key => $log){
             $work = $this->createProcess($log);
             $pid = $work->start();
-            $this->works[$pid] = [$work, $key];
+            $this->process[$pid] = [$work, $key];
         }
 
-        foreach($this->works as $work){
+        foreach($this->process as $work){
             list($work, $key) = $work;
             $this->addEventLoop($work, $key);
         }
@@ -114,7 +114,7 @@ class WatchLogServer extends Server{
     private function createWatch($log, $key){
         $work = $this->createProcess($log);
         $pid = $work->start();
-        $this->works[$pid] = [$work, $key];
+        $this->process[$pid] = [$work, $key];
         $this->addEventLoop($work, $key);
     }
 
@@ -123,7 +123,7 @@ class WatchLogServer extends Server{
      */
     function onWorkerStop(){
         $this->log("Stop child process");
-        foreach($this->works as $pid => $work){
+        foreach($this->process as $pid => $work){
             list($process, $key) = $work;
             $this->deleteWatch($process, $pid, $key);
         }
