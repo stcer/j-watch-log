@@ -102,7 +102,7 @@ class WatchLogServer extends Server{
      * @param $serv
      */
     function onWorkerStop($serv){
-        $this->log("Start stop child process");
+        $this->log("Stop child process");
         foreach($this->works as $pid => $work){
             list($process, $log) = $work;
             $process->kill($pid);
