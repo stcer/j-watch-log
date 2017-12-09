@@ -36,6 +36,7 @@ $.extend(JChat.prototype, (new JEvent()), {
       if(!data.index){
         data.index = 0;
       }
+      data.msg += "\n";
       this.data.messages[data.index].push(data);
       this.trigger('message.add', data);
     }
@@ -83,6 +84,18 @@ var vm = new Vue({
 
     add: function(){
       chat.conn.send({cmd : 'add', 'file': this.input}, true);
+    },
+
+    restart: function(){
+      if(!confirm('Ready?')){
+        return;
+      }
+
+      chat.conn.send({cmd : 'restart'}, true);
+
+      setTimeout(function(){
+        chat.conn.create();
+      }, 2000);
     }
   },
 

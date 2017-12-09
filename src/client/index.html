@@ -2,18 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello watchLog</title>
+    <title>WatchLog</title>
 
     <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" />
     <style>
-        li{ list-style: none; }
-        .user { color: #999; }
-        .me{ color: green; }
-        .self{ text-align: right }
-        .private { color: blue; }
-
-        .contents{
+        .clear{
             display: block;
             clear: both;
         }
@@ -45,15 +38,16 @@
         </p>
 
         <div class="contents">
-        <div v-for="(index, key) in winMap"
-             v-if="key < windows && key < files.length" :class="{col: windows > 1}">
+            <div v-for="(index, key) in winMap"
+                 v-if="key < windows && key < files.length" :class="{col: windows > 1}">
 
-            <p>{{files[index]}}</p>
+                <p>{{files[index]}}</p>
 
-            <pre class="content"
-                 @click="selWindow(key)"><template v-for="item in messages[index]">{{item.msg}}</template >
-            </pre>
-        </div>
+                <pre class="content"
+                     @click="selWindow(key)"><template v-for="item in messages[index]">{{item.msg}}</template >
+                </pre>
+            </div>
+            <div class="clear"></div>
         </div>
 
         <ul>
@@ -62,8 +56,9 @@
             </li>
         </ul>
 
-        <input size="20" v-model="input">
+        <input size="40" v-model="input">
         <button @click="add()">增加日志</button>
+        <button @click="restart()">重启</button>
     </div>
 
 </div>
@@ -71,7 +66,6 @@
 </div>
 
 <script type="text/javascript" src="//cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
-<script type="text/javascript" src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="//cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
 
 <script src="lib/jquery.json.js"></script>

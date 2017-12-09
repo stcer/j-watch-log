@@ -12,7 +12,7 @@ var JSocket = function(address, protocol, packer) {
     this.packer = packer ? packer : JsonPacker;
     this.address = address;
     this.protocol = this._formatProtocol(protocol);
-    this.socket = this._createSocket();
+    this.socket = this.create();
 };
 
 JSocket.prototype = {
@@ -38,7 +38,7 @@ JSocket.prototype = {
         return protocol;
     },
 
-    _createSocket : function(){
+    create : function(){
         var address = this.address;
         var protocol = this.protocol;
         var packer = this.packer;
@@ -83,7 +83,7 @@ JSocket.prototype = {
     },
 
     _connAndSend : function(data, timeout){
-        this.socket = this._createSocket();
+        this.socket = this.create();
         var that = this;
         setTimeout(function(){
             console.log('socket.stat:' + that.socket.readyState);

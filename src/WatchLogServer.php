@@ -8,18 +8,18 @@ use swoole_process;
 use j\network\http\Server;
 
 /**
- * Class ImServer
- * @package ws
+ * Class WatchLogServer
+ * @package j\watchLog
  */
 class WatchLogServer extends Server{
 
-    protected $watchLog = [];
+    protected $logs = [];
 
     /**
      * @param $file
      */
     function addWatchLog($file){
-        $this->watchLog[] = $file;
+        $this->logs[] = $file;
     }
 
     /**
@@ -54,7 +54,7 @@ class WatchLogServer extends Server{
      * @throws
 	 */
 	protected function onServerCreate($server){
-        if(!$this->watchLog){
+        if(!$this->logs){
             throw new \Exception("Watch log file is empty");
         }
 
@@ -76,7 +76,7 @@ class WatchLogServer extends Server{
             return;
         }
 
-        foreach($this->watchLog as $key => $log){
+        foreach($this->logs as $key => $log){
             $work = new swoole_process(function($process) use($log) {
                 $process->exec("/usr/bin/tail", array("-f", $log));
             }, true);
@@ -98,6 +98,24 @@ class WatchLogServer extends Server{
         }
     }
 
+    private function createWatch($log, $key){
+        $work = new swoole_process(function($process) use($log) {
+            $process->exec("/usr/bin/tail", array("-f", $log));
+        }, true);
+
+        $pid = $work->start();
+        $this->works[$pid] = [$work, $key];
+
+        swoole_event_add($work->pipe, function($pipe) use($work, $key){
+            $this->log("Read user process data");
+            $data = $work->read();
+            $this->broadcast([
+                'msg' => $data,
+                'index' => $key
+            ]);
+        });
+    }
+
     /**
      * 广播JSON数据
      * @param $data
@@ -110,7 +128,6 @@ class WatchLogServer extends Server{
 
 
     protected $users = [];
-    protected $userLogs = [];
 
     /**
      * @param swoole_websocket_server $server
@@ -118,8 +135,8 @@ class WatchLogServer extends Server{
      */
     function onOpen($server, $req){
         $this->users[(int)$req->fd] = $req->fd;
-        $this->send($req->fd, ['msg' => "welcome\n"]);
-        $this->send($req->fd, ['files' => $this->watchLog, 'type' => 'files']);
+        $this->send($req->fd, ['msg' => "welcome"]);
+        $this->send($req->fd, ['files' => $this->logs, 'type' => 'files']);
     }
 
     /**
@@ -140,18 +157,35 @@ class WatchLogServer extends Server{
             return;
         }
 
-        if($data['cmd'] == 'close'){
-            // todo close all user's log file
-            $this->send($frame->fd, ['msg' => 'close all']);
-        } elseif($data['cmd'] == 'add'){
-            // todo check unique
+        if($data['cmd'] == 'restart')
+        {
+            $this->send($frame->fd, ['msg' => "server will reload"]);
+            $this->getSwoole()->reload();
+        }
+        elseif($data['cmd'] == 'add')
+        {
             $file = $data['file'];
             if(!file_exists($file)){
-                $this->send($frame->fd, ['msg' => 'file not found, cwd:' . getcwd(), 'type' => 'error']);
+                $this->send($frame->fd, [
+                    'msg' => 'file not found, cwd:' . getcwd(),
+                    'type' => 'error'
+                ]);
+            } elseif(in_array($file, $this->logs)){
+                $this->send($frame->fd, [
+                    'msg' => 'file was exist',
+                    'type' => 'error'
+                ]);
             } else {
-                // todo add user's watch
-                $this->userLogs[] = $file;
-                $this->send($frame->fd, ['files' => array_merge($this->watchLog, $this->userLogs), 'type' => 'files']);
+                // todo add file to user watch logs
+                $this->logs[] = $file;
+                $this->send($frame->fd, [
+                    'files' => $this->logs,
+                    'type' => 'files'
+                ]);
+
+                // create user's watch
+                $key = count($this->logs) - 1;
+                $this->createWatch($file, $key);
             }
         }
     }
@@ -161,6 +195,9 @@ class WatchLogServer extends Server{
      * @param $data
      */
     protected function send($fd, $data){
+        if(isset($data['msg'])){
+            $data['msg'] .= "\n";
+        }
         /** @var \Swoole\WebSocket\Server $server */
         $server = $this->getSwoole();
         $server->push($fd, $this->pack($data));

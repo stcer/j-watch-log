@@ -40,5 +40,5 @@
         "secure-http" : false
     },
 
-    "bin" : ["bin/watchLogServer.php"]
+    "bin" : ["bin/watchLog.php"]
 }
