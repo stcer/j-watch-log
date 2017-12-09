@@ -21,6 +21,10 @@
             width: 49%;
             float: left;
         }
+
+        #files{
+            max-width: 600px;
+        }
     </style>
 </head>
 <body>
@@ -44,13 +48,14 @@
                 <p>{{files[index]}}</p>
 
                 <pre class="content"
-                     @click="selWindow(key)"><template v-for="item in messages[index]">{{item.msg}}</template >
+                     @click="selWindow(key)"><template
+                        v-for="item in messages[index]">{{item.msg}}</template >
                 </pre>
             </div>
             <div class="clear"></div>
         </div>
 
-        <ul>
+        <ul id="files">
             <li v-for="(file, index) in files" @click="selFile(index)">
                 <span>{{file}}</span>
             </li>

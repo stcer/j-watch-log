@@ -33,7 +33,7 @@ $.extend(JChat.prototype, (new JEvent()), {
       this.data.files = data.files;
       this.trigger('files.change', data);
     } else {
-      if(!data.index){
+      if(typeof data.index === 'undefined'){
         data.index = this.data.winMap[this.data.crtWindow];
       }
       this.data.messages[data.index].push(data);
@@ -70,6 +70,7 @@ var vm = new Vue({
   methods : {
     selFile : function(index){
       Vue.set(this.winMap, this.crtWindow, index)
+      console.log(this.winMap);
       gotoBottom();
     },
 
