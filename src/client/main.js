@@ -64,6 +64,13 @@ var gotoBottom = function(){
 
 chat.on('message.add', gotoBottom);
 
+$(document).keydown(function(event){
+  if (event.which == 13 ) {
+      event.preventDefault();
+      chat.addMessage({msg: "\n"});
+  }
+});
+
 var vm = new Vue({
   el:'#app',
   data : chat.data,
