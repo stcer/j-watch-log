@@ -96,6 +96,10 @@ var vm = new Vue({
       setTimeout(function(){
         chat.conn.create();
       }, 2000);
+    },
+
+    newline: function () {
+      chat.addMessage({msg: "\n"});
     }
   },
 
