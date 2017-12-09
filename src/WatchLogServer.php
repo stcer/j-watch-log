@@ -98,6 +98,17 @@ class WatchLogServer extends Server{
         }
     }
 
+    /**
+     * @param $serv
+     */
+    function onWorkerStop($serv){
+        $this->log("Start stop child process");
+        foreach($this->works as $pid => $work){
+            list($process, $log) = $work;
+            $process->kill($pid);
+        }
+    }
+
     private function createWatch($log, $key){
         $work = new swoole_process(function($process) use($log) {
             $process->exec("/usr/bin/tail", array("-f", $log));

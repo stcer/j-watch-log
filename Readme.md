@@ -29,32 +29,24 @@ return [
 
 ## usage
 
-**帮助信息**  
 php vendor/bin/WatchLog.php -h
 
 ```
 php WatchLog.php [options]
+
 Options:
     -h, print this message
     -v, debug mode
     
     -d, run as a daemonize mode
+    -a <action>, 
+        stop: stop the server 
+        restart: restart the server
     
     --config value, config file path, 
         default: project_root/config-watchLog.php
 
 ```
-
-**启动服务**  
-php vendor/bin/WatchLog.php
-
-**以守护进程运行**  
-php vendor/bin/WatchLog.php -d
-
-**结速进程**  
-1. 自行kill主进程id
-2. http://your_server:port/cgi/manager/shutdown
-
 
 ## 访问
 
