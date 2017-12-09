@@ -16,6 +16,17 @@ class WatchLogServer extends Server{
     protected $logs = [];
 
     /**
+     * @var swoole_process[]
+     */
+    protected $works = [];
+
+    /**
+     * @var array
+     */
+    protected $users = [];
+
+
+    /**
      * @param $file
      */
     function addWatchLog($file){
@@ -64,11 +75,6 @@ class WatchLogServer extends Server{
 	}
 
     /**
-     * @var swoole_process[]
-     */
-    protected $works = [];
-
-    /**
      * @param swoole_websocket_server $serv
      */
     function onWorkerStart($serv){
@@ -77,47 +83,25 @@ class WatchLogServer extends Server{
         }
 
         foreach($this->logs as $key => $log){
-            $work = new swoole_process(function($process) use($log) {
-                $process->exec("/usr/bin/tail", array("-f", $log));
-            }, true);
-
+            $work = $this->createProcess($log);
             $pid = $work->start();
             $this->works[$pid] = [$work, $key];
         }
 
         foreach($this->works as $work){
             list($work, $key) = $work;
-            swoole_event_add($work->pipe, function($pipe) use($work, $key){
-                $this->log("Read process data");
-                $data = $work->read();
-                $this->broadcast([
-                    'msg' => $data,
-                    'index' => $key
-                ]);
-            });
+            $this->addEventLoop($work, $key);
         }
     }
 
-    /**
-     * @param $serv
-     */
-    function onWorkerStop($serv){
-        $this->log("Stop child process");
-        foreach($this->works as $pid => $work){
-            list($process, $log) = $work;
-            $process->kill($pid);
-        }
-    }
-
-    private function createWatch($log, $key){
-        $work = new swoole_process(function($process) use($log) {
+    private function createProcess($log){
+        return new swoole_process(function($process) use($log) {
             $process->exec("/usr/bin/tail", array("-f", $log));
         }, true);
+    }
 
-        $pid = $work->start();
-        $this->works[$pid] = [$work, $key];
-
-        swoole_event_add($work->pipe, function($pipe) use($work, $key){
+    private function addEventLoop($work, $key){
+        swoole_event_add($work->pipe, function() use($work, $key){
             $this->log("Read user process data");
             $data = $work->read();
             $this->broadcast([
@@ -125,6 +109,30 @@ class WatchLogServer extends Server{
                 'index' => $key
             ]);
         });
+    }
+
+    private function createWatch($log, $key){
+        $work = $this->createProcess($log);
+        $pid = $work->start();
+        $this->works[$pid] = [$work, $key];
+        $this->addEventLoop($work, $key);
+    }
+
+    /**
+     * 删除事件循环, kill进程
+     */
+    function onWorkerStop(){
+        $this->log("Stop child process");
+        foreach($this->works as $pid => $work){
+            list($process, $key) = $work;
+            $this->deleteWatch($process, $pid, $key);
+        }
+    }
+
+    private function deleteWatch($process, $pid, $key){
+        swoole_event_del($process->pipe);
+        $process->kill($pid);
+        unset($this->logs[$key]);
     }
 
     /**
@@ -136,9 +144,6 @@ class WatchLogServer extends Server{
             $this->send($fd, $data);
         }
     }
-
-
-    protected $users = [];
 
     /**
      * @param swoole_websocket_server $server

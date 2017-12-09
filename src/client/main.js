@@ -34,9 +34,8 @@ $.extend(JChat.prototype, (new JEvent()), {
       this.trigger('files.change', data);
     } else {
       if(!data.index){
-        data.index = 0;
+        data.index = this.data.winMap[this.data.crtWindow];
       }
-      data.msg += "\n";
       this.data.messages[data.index].push(data);
       this.trigger('message.add', data);
     }
