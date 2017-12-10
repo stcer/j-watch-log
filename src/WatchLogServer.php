@@ -41,16 +41,11 @@ class WatchLogServer extends Server{
         parent::bindEvent($server);
 
         // bind web socket event
-        $binds = [
+        $this->bindEventOnTarget($server, [
             'onOpen' => 'Open',
             'onMessage' => 'message',
             'onClose' => 'Close',
-        ];
-        foreach($binds as $method => $evt){
-            if(method_exists($this, $method)){
-                $server->on($evt, array($this, $method));
-            }
-        }
+        ], $this);
     }
 
     /**
