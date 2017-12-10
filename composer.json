@@ -29,7 +29,7 @@
     ],
 
     "require": {
-        "stcer/j-http" : "dev-master"
+        "stcer/j-http" : "*"
     },
 
     "require-dev" : {
