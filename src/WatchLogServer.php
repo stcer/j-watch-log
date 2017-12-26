@@ -30,6 +30,10 @@ class WatchLogServer extends Server{
      * @param $file
      */
     function addWatchLog($file){
+        if(!file_exists($file)){
+            trigger_error('file not found');
+            return;
+        }
         $this->logs[] = $file;
     }
 
@@ -207,6 +211,10 @@ class WatchLogServer extends Server{
      */
     protected function send($fd, $data){
         if(isset($data['msg'])){
+            $encode = mb_detect_encoding($data['msg'], ['gbk', 'gb2312']);
+            if($encode){
+                $data['msg'] = mb_convert_encoding($data['msg'], 'utf-8', $encode);
+            }
             $data['msg'] .= "\n";
         }
         /** @var \Swoole\WebSocket\Server $server */
