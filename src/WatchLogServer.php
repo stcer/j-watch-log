@@ -59,19 +59,19 @@ class WatchLogServer extends Server{
         return new swoole_websocket_server($this->ip, $this->port);
     }
 
-	/**
-	 * @param \swoole_http_server $server
-     * @throws
-	 */
-	protected function onServerCreate($server){
+    /**
+    * @param \swoole_http_server $server
+    * @throws
+    */
+    protected function onServerCreate($server){
         if(!$this->logs){
             throw new \Exception("Watch log file is empty");
         }
 
         parent::onServerCreate($server);
-		$this->setOption('dispatch_mode', 2);
-		$this->setOption('worker_num', 1);
-	}
+        $this->setOption('dispatch_mode', 2);
+        $this->setOption('worker_num', 1);
+    }
 
     /**
      * @param swoole_websocket_server $serv
