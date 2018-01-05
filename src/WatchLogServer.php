@@ -2,6 +2,7 @@
 
 namespace j\watchLog;
 
+use j\tool\Strings;
 use swoole_websocket_server;
 use swoole_process;
 
@@ -210,9 +211,9 @@ class WatchLogServer extends Server{
      * @param $data
      */
     protected function send($fd, $data){
-        if(isset($data['msg'])){
-            $encode = mb_detect_encoding($data['msg'], ['gbk', 'gb2312']);
-            if($encode){
+        if(isset($data['msg']) && is_string($data['msg'])){
+            if(!Strings::valid($data['msg'])){
+                $encode = mb_detect_encoding($data['msg'], 'gbk, gb2312');
                 $data['msg'] = mb_convert_encoding($data['msg'], 'utf-8', $encode);
             }
             $data['msg'] .= "\n";
