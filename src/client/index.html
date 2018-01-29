@@ -53,9 +53,8 @@
 
                 <p>{{files[index]}}</p>
 
-                <pre class="content"
-                     @click="selWindow(key)"><template
-                        v-for="item in messages[index]">{{item.msg}}</template >
+                <pre class="content" @click="selWindow(key)"><template
+                    v-for="item in messages[index]">{{item.msg}}</template >
                 </pre>
             </div>
             <div class="clear"></div>
@@ -71,6 +70,7 @@
         <button @click="add()">增加日志</button>
         <button @click="restart()">重启</button>
         <button @click="newline()">换行</button>
+        <button @click="scrollToggle()">{{scrollToggleName}}</button>
     </div>
 
 </div>
