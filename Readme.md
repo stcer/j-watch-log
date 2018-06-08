@@ -1,11 +1,11 @@
-# ¸ÅÊö
+# æ¦‚è¿°
 
-ÓÃÀ´¼àÌý·þÎñÆ÷ÈÕÖ¾ÎÄ¼þµÄ±ä»¯, web°æ¶àÎÄ¼þÍ¬ÆÁµÄ tail -f fileÐ§¹û,  
-Ö÷ÒªÓÃÀ´ÏñÎÒÒ»ÑùÏ²»¶¿ª·¢µ÷ÊÔ»ùÓÚÈÕÖ¾ÎÄ¼þ
+ç”¨æ¥ç›‘å¬æœåŠ¡å™¨æ—¥å¿—æ–‡ä»¶çš„å˜åŒ–, webç‰ˆå¤šæ–‡ä»¶åŒå±çš„ tail -f fileæ•ˆæžœ,  
+ä¸»è¦ç”¨æ¥åƒæˆ‘ä¸€æ ·å–œæ¬¢å¼€å‘è°ƒè¯•åŸºäºŽæ—¥å¿—æ–‡ä»¶
 
 ![](example.png)
 
-×¢Òâ: ¿ÉÒÔÔö¼ÓÈÎºÎÎÄ¼þ¼àÌý, ÎªÁËÄúµÄ°²È«ÇëÓÃÓÚ²âÊÔ»·¾³ÏÂÔËÐÐ, »òÊÇ×ÔÐÐÔö¼Ó·À»ðÇ½¹æÔò°²È«·ÃÎÊ
+æ³¨æ„: å¯ä»¥å¢žåŠ ä»»ä½•æ–‡ä»¶ç›‘å¬, ä¸ºäº†æ‚¨çš„å®‰å…¨è¯·ç”¨äºŽæµ‹è¯•çŽ¯å¢ƒä¸‹è¿è¡Œ, æˆ–æ˜¯è‡ªè¡Œå¢žåŠ é˜²ç«å¢™è§„åˆ™å®‰å…¨è®¿é—®
 
 ## install
 
@@ -15,10 +15,10 @@ composer install stcer/j-watch-log:*
 
 ## config
 
-´´½¨ÅäÖÃÎÄ¼þÉèÖÃÏà¹Ø²ÎÊý, ÅäÖÃlogs¼àÌý¶à¸öÈÕÖ¾ÎÄ¼þ, 
+åˆ›å»ºé…ç½®æ–‡ä»¶è®¾ç½®ç›¸å…³å‚æ•°, é…ç½®logsç›‘å¬å¤šä¸ªæ—¥å¿—æ–‡ä»¶, 
 
-Ê¹ÓÃ --config configFilePath ÉèÖÃÅäÖÃÎÄ¼þÂ·¾¶,  
-Ä¬ÈÏÅäÖÃÎÄ¼þ project_root/config-watchLog.php
+ä½¿ç”¨ --config configFilePath è®¾ç½®é…ç½®æ–‡ä»¶è·¯å¾„,  
+é»˜è®¤é…ç½®æ–‡ä»¶ project_root/config-watchLog.php
 
 ```php
 <?php
@@ -53,12 +53,12 @@ Options:
 
 ```
 
-## ·ÃÎÊ
+## è®¿é—®
 
 http://your_server:port
 
 
 ## todo
 
-1. Ôö¼ÓÈÕÖ¾µ½ÓÃ»§¼à¿Ø
-1. Ôö¼Ó¿Í»§¶ËÊÕ¼¯Ô¶³ÌÖ÷»úÈÕÖ¾
+1. å¢žåŠ æ—¥å¿—åˆ°ç”¨æˆ·ç›‘æŽ§
+1. å¢žåŠ å®¢æˆ·ç«¯æ”¶é›†è¿œç¨‹ä¸»æœºæ—¥å¿—
