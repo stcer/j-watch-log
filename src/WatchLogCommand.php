@@ -10,7 +10,8 @@ use j\log\LogInterface;
  * Class WatchLogServer
  * @package j\watchLog
  */
-class WatchLogCommand {
+class WatchLogCommand
+{
     /**
      * @var array
      */
@@ -26,8 +27,9 @@ class WatchLogCommand {
      * @param array $options
      * @param string $vendorPath
      */
-    public function __construct(array $options = [], $vendorPath){
-        if(!$options){
+    public function __construct(array $options = [], $vendorPath)
+    {
+        if (!$options) {
             $options = getopt("d", ["config:"]);
         }
 
@@ -36,7 +38,8 @@ class WatchLogCommand {
     }
 
 
-    public static function usage(){
+    public static function usage()
+    {
         echo <<<STR
 php WatchLog.php [options]
 
@@ -61,16 +64,17 @@ STR;
      * @return array
      * @throws Exception
      */
-    private function getConfig(){
+    private function getConfig()
+    {
         $options = $this->options;
 
-        if(isset($options['config'])){
+        if (isset($options['config'])) {
             $confFile = $options['config'];
         } else {
             $confFile = dirname($this->vendorPath) . '/config-watchLog.php';
         }
 
-        if(!file_exists($confFile)){
+        if (!file_exists($confFile)) {
             throw new Exception("Config file not found({$confFile})");
         }
 
@@ -78,14 +82,14 @@ STR;
         $conf = include($confFile);
         ob_end_clean();
 
-        if(!is_array($conf)){
+        if (!is_array($conf)) {
             throw new Exception("Config file is not well format(must return array)");
         }
 
         $host = isset($conf['host']) ? $conf['host'] : '0.0.0.0';
         $port = isset($conf['port']) ? $conf['port'] : 9504;
         $logs = isset($conf['logs']) ? $conf['logs'] : [];
-        if(!$logs){
+        if (!$logs) {
             throw new Exception("Logs not found, please config logs");
         }
 
@@ -97,15 +101,16 @@ STR;
      * @param LogInterface $log
      * @throws Exception
      */
-    function run($log = null){
-        if(isset($this->options['h'])){
+    public function run($log = null)
+    {
+        if (isset($this->options['h'])) {
             $this->usage();
             return;
         }
 
         list($host, $port, $logs) = $this->getConfig();
 
-        if(isset($this->options['a'])){
+        if (isset($this->options['a'])) {
             $serverName = "{$host}:{$port}";
             $this->manager($serverName, $this->options['a']);
             return;
@@ -115,11 +120,11 @@ STR;
         $server->documentRoot = dirname(__DIR__) . "/src/client/";
         $server->actionNs = 'j\\watchLog\\cgi\\';
         $server->setLogger($log ?: new Log());
-        foreach($logs as $log){
+        foreach ($logs as $log) {
             $server->addWatchLog($log);
         }
 
-        if(isset($this->options['d'])){
+        if (isset($this->options['d'])) {
             $server->daemonize();
         }
 
@@ -143,13 +148,13 @@ STR;
      */
     protected function manager($serverName, $action = 'shutdown')
     {
-        if($action == 'stop'){
+        if ($action == 'stop') {
             $action = 'shutdown';
         }
 
         $url = "http://{$serverName}/cgi/manager/{$action}";
         $rs = file_get_contents($url);
-        if(!$rs || !json_decode($rs, true)){
+        if (!$rs || !json_decode($rs, true)) {
             throw new Exception("$action fail, empty return on this server");
         }
         echo $rs. "\n";

@@ -4,7 +4,6 @@ namespace j\watchLog;
 
 use j\tool\Strings;
 use swoole_websocket_server;
-use swoole_process;
 
 use j\network\http\Server;
 
@@ -12,26 +11,26 @@ use j\network\http\Server;
  * Class WatchLogServer
  * @package j\watchLog
  */
-class WatchLogServer extends Server{
-
+class WatchLogServer extends Server
+{
     protected $logs = [];
 
     /**
-     * @var swoole_process[]
+     * @var TailFile[]
      */
-    protected $process = [];
+    protected $files = [];
 
     /**
      * @var array
      */
     protected $users = [];
 
-
     /**
      * @param $file
      */
-    function addWatchLog($file){
-        if(!file_exists($file)){
+    public function addWatchLog($file)
+    {
+        if (!file_exists($file)) {
             trigger_error('file not found');
             return;
         }
@@ -41,7 +40,8 @@ class WatchLogServer extends Server{
     /**
      * @param \swoole_http_server $server
      */
-    protected function bindEvent($server) {
+    protected function bindEvent($server)
+    {
         // bind other event
         parent::bindEvent($server);
 
@@ -56,7 +56,8 @@ class WatchLogServer extends Server{
     /**
      * @return swoole_websocket_server
      */
-    protected function createServer() {
+    protected function createServer()
+    {
         return new swoole_websocket_server($this->ip, $this->port);
     }
 
@@ -64,83 +65,52 @@ class WatchLogServer extends Server{
     * @param \swoole_http_server $server
     * @throws
     */
-    protected function onServerCreate($server){
-        if(!$this->logs){
-            throw new \Exception("Watch log file is empty");
-        }
-
+    protected function onServerCreate($server)
+    {
         parent::onServerCreate($server);
         $this->setOption('dispatch_mode', 2);
         $this->setOption('worker_num', 1);
     }
 
-    /**
-     * @param swoole_websocket_server $serv
-     */
-    function onWorkerStart($serv){
-        if ($serv->taskworker) {
-            return;
-        }
-
-        foreach($this->logs as $key => $log){
-            $work = $this->createProcess($log);
-            $pid = $work->start();
-            $this->process[$pid] = [$work, $key];
-        }
-
-        foreach($this->process as $work){
-            list($work, $key) = $work;
-            $this->addEventLoop($work, $key);
-        }
+    public function onWorkerStart()
+    {
+        $this->initWatch();
     }
 
-    private function createProcess($log){
-        return new swoole_process(function($process) use($log) {
-            $process->exec("/usr/bin/tail", array("-f", $log));
-        }, true);
-    }
+    protected function initWatch()
+    {
+        if (!$this->logs) {
+            throw new \Exception("Watch log file is empty");
+        }
 
-    private function addEventLoop($work, $key){
-        swoole_event_add($work->pipe, function() use($work, $key){
-            $this->log("Read user process data");
-            $data = $work->read();
-            $this->broadcast([
-                'msg' => $data,
-                'index' => $key
-            ]);
-        });
-    }
-
-    private function createWatch($log, $key){
-        $work = $this->createProcess($log);
-        $pid = $work->start();
-        $this->process[$pid] = [$work, $key];
-        $this->addEventLoop($work, $key);
+        foreach ($this->logs as $key => $file) {
+            $tailFile = new TailFile($file, $key);
+            $tailFile->onData = function ($data) {
+                $this->broadcast($data);
+            };
+            $tailFile->start();
+            $this->files[$key] = $tailFile;
+        }
     }
 
     /**
      * 删除事件循环, kill进程
      */
-    function onWorkerStop(){
+    public function onWorkerStop()
+    {
         $this->log("Stop child process");
-        foreach($this->process as $pid => $work){
-            list($process, $key) = $work;
-            $this->deleteWatch($process, $pid, $key);
+        foreach ($this->files as $work) {
+            $work->stop();
         }
-    }
-
-    private function deleteWatch($process, $pid, $key){
-        swoole_event_del($process->pipe);
-        $process->kill($pid);
-        unset($this->logs[$key]);
     }
 
     /**
      * 广播JSON数据
      * @param $data
      */
-    protected function broadcast($data){
-        foreach($this->users as $fd){
+    protected function broadcast($data)
+    {
+        foreach ($this->users as $fd) {
             $this->send($fd, $data);
         }
     }
@@ -149,7 +119,8 @@ class WatchLogServer extends Server{
      * @param swoole_websocket_server $server
      * @param $req
      */
-    function onOpen($server, $req){
+    public function onOpen($server, $req)
+    {
         $this->users[(int)$req->fd] = $req->fd;
         $this->send($req->fd, ['msg' => "welcome"]);
         $this->send($req->fd, ['files' => $this->logs, 'type' => 'files']);
@@ -159,7 +130,8 @@ class WatchLogServer extends Server{
      * @param swoole_websocket_server $server
      * @param $fd
      */
-    function onClose($server, $fd) {
+    public function onClose($server, $fd)
+    {
         unset($this->users[(int)$fd]);
     }
 
@@ -167,26 +139,24 @@ class WatchLogServer extends Server{
      * @param swoole_websocket_server $server
      * @param $frame
      */
-    function onMessage($server, $frame){
+    public function onMessage($server, $frame)
+    {
         $data = $this->unpack($frame->data);
-        if(!$data){
+        if (!$data) {
             return;
         }
 
-        if($data['cmd'] == 'restart')
-        {
+        if ($data['cmd'] == 'restart') {
             $this->send($frame->fd, ['msg' => "server will reload"]);
             $this->getSwoole()->reload();
-        }
-        elseif($data['cmd'] == 'add')
-        {
+        } elseif ($data['cmd'] == 'add') {
             $file = $data['file'];
-            if(!file_exists($file)){
+            if (!file_exists($file)) {
                 $this->send($frame->fd, [
                     'msg' => 'file not found, cwd:' . getcwd(),
                     'type' => 'error'
                 ]);
-            } elseif(in_array($file, $this->logs)){
+            } elseif (in_array($file, $this->logs)) {
                 $this->send($frame->fd, [
                     'msg' => 'file was exist',
                     'type' => 'error'
@@ -198,10 +168,6 @@ class WatchLogServer extends Server{
                     'files' => $this->logs,
                     'type' => 'files'
                 ]);
-
-                // create user's watch
-                $key = count($this->logs) - 1;
-                $this->createWatch($file, $key);
             }
         }
     }
@@ -210,9 +176,10 @@ class WatchLogServer extends Server{
      * @param $fd
      * @param $data
      */
-    protected function send($fd, $data){
-        if(isset($data['msg']) && is_string($data['msg'])){
-            if(!Strings::valid($data['msg'])){
+    protected function send($fd, $data)
+    {
+        if (isset($data['msg']) && is_string($data['msg'])) {
+            if (!Strings::valid($data['msg'])) {
                 $encode = mb_detect_encoding($data['msg'], 'gbk, gb2312');
                 $data['msg'] = mb_convert_encoding($data['msg'], 'utf-8', $encode);
             }
@@ -227,12 +194,14 @@ class WatchLogServer extends Server{
      * @param $data
      * @return string
      */
-    private function pack($data){
+    private function pack($data)
+    {
         $data['date'] = date('H:i:s');
         return json_encode($data);
     }
 
-    private function unpack($message) {
+    private function unpack($message)
+    {
         return json_decode($message, true);
     }
 }

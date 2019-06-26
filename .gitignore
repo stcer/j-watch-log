@@ -6,3 +6,4 @@
 vendor
 composer.lock
 tmp
+.php_cs.cache
