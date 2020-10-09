@@ -9,9 +9,14 @@ build-composer-package:
 
 rsync-repo:
     script:
-        - sh -x /usr/local/sbin/rsyncGitRepo.sh myali
+        - echo $CI_PROJECT_NAMESPACE
+        - echo $CI_PROJECT_NAME
+        - echo $CI_COMMIT_REF_NAME
+        - echo $CI_COMMIT_SHA
+        - sh -x /usr/local/sbin/rsyncGitRepo.sh myali ${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME} ${CI_COMMIT_REF_NAME} ${CI_COMMIT_SHA}
     stage: build
     tags:
         - dev
     only:
         - master
+        - tags
