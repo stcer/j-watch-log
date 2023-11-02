@@ -20,21 +20,19 @@ class WatchLogCommand
     /**
      * @var string
      */
-    private $vendorPath;
+    private $configFile;
 
     /**
      * WatchLog constructor.
-     * @param array $options
-     * @param string $vendorPath
      */
-    public function __construct(array $options = [], $vendorPath)
+    public function __construct(array $options = [], string $configFile = '')
     {
         if (!$options) {
             $options = getopt("d", ["config:"]);
         }
 
         $this->options = $options;
-        $this->vendorPath = $vendorPath;
+        $this->configFile = $configFile;
     }
 
 
@@ -67,13 +65,7 @@ STR;
     private function getConfig()
     {
         $options = $this->options;
-
-        if (isset($options['config'])) {
-            $confFile = $options['config'];
-        } else {
-            $confFile = dirname($this->vendorPath) . '/config-watchLog.php';
-        }
-
+        $confFile = $options['config'] ?? $this->configFile;
         if (!file_exists($confFile)) {
             throw new Exception("Config file not found({$confFile})");
         }
@@ -86,9 +78,9 @@ STR;
             throw new Exception("Config file is not well format(must return array)");
         }
 
-        $host = isset($conf['host']) ? $conf['host'] : '0.0.0.0';
-        $port = isset($conf['port']) ? $conf['port'] : 9504;
-        $logs = isset($conf['logs']) ? $conf['logs'] : [];
+        $host = $conf['host'] ?? '0.0.0.0';
+        $port = $conf['port'] ?? 9504;
+        $logs = $conf['logs'] ?? [];
         if (!$logs) {
             throw new Exception("Logs not found, please config logs");
         }

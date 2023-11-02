@@ -84,9 +84,12 @@ class WatchLogServer extends Server
         }
 
         foreach ($this->logs as $key => $file) {
-            $tailFile = new TailFile($file, $key);
-            $tailFile->onData = function ($data) {
-                $this->broadcast($data);
+            $tailFile = new TailFile($file);
+            $tailFile->onData = function ($msg) use ($key) {
+                $this->broadcast([
+                    'msg' => $msg,
+                    'index' => $key
+                ]);
             };
             $tailFile->start();
             $this->files[$key] = $tailFile;

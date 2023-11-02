@@ -6,9 +6,9 @@ use Swoole\Process;
 require __DIR__ . '/../vendor/autoload.php';
 
 $watchFile = __DIR__ . '/../tmp/test.log';
-$tailFile = new TailFile($watchFile, 'demo');
+$tailFile = new TailFile($watchFile);
 $tailFile->onData = function ($message) {
-    echo $message['msg'];
+    echo $message;
 };
 
 $timer = Swoole\Timer::tick(1000, function () use ($watchFile) {

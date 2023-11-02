@@ -21,10 +21,7 @@
             "type": "composer",
             "url": "http://packages.9z.cn"
         },
-        {
-            "type": "composer",
-            "url": "https://packagist.phpcomposer.com"
-        },
+
         {"packagist": false}
     ],
 

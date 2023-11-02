@@ -10,9 +10,10 @@ ini_set('log_errors', 0);
 // main, init server and run
 use j\watchLog\WatchLogCommand;
 use Exception;
+use function dirname;
 
 // run
-try{
+try {
     $composerAutoload = [
         __DIR__ . '/../vendor/autoload.php', // in dev repo
         __DIR__ . '/../../../autoload.php', // installed as a composer binary
@@ -24,20 +25,19 @@ try{
             break;
         }
     }
-    if(!isset($vendorPath)){
+    if (!isset($vendorPath)) {
         throw new \Exception("Not found autoload.php");
     }
 
     $options = getopt("a:dhv", ["config:"]);
-    (new WatchLogCommand($options, $vendorPath))->run();
-}
-catch(Exception $e)
-{
+
+    $confFile = dirname($vendorPath) . '/config-watchLog.php';
+    (new WatchLogCommand($options, $confFile))->run();
+} catch (Exception $e) {
     echo "Error:\n";
     echo $e->getMessage() . "\n";
 
-    if(isset($options['v'])){
+    if (isset($options['v'])) {
         echo $e->getTraceAsString();
     }
 }
-

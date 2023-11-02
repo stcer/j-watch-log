@@ -19,18 +19,14 @@ class TailFile
 
     protected $rs;
 
-    protected $key;
-
     protected $writePipe;
 
     /**
      * LogFile constructor.
-     * @param string $key 索引
      * @param string $file
      */
-    public function __construct($file, $key)
+    public function __construct($file)
     {
-        $this->key = $key;
         $this->file = $file;
     }
 
@@ -63,7 +59,7 @@ class TailFile
         unset($this->rs);
     }
 
-    private function isStarted()
+    private function isStarted(): bool
     {
         return isset($this->rs);
     }
@@ -71,10 +67,7 @@ class TailFile
     private function send($data)
     {
         if ($this->onData) {
-            call_user_func($this->onData, [
-                'msg' => $data,
-                'index' => $this->key
-            ]);
+            call_user_func($this->onData, $data);
         }
     }
 }
