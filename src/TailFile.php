@@ -21,7 +21,7 @@ class TailFile
 
     protected $key;
 
-    protected $pid;
+    protected $writePipe;
 
     /**
      * LogFile constructor.
@@ -47,6 +47,7 @@ class TailFile
             exit("execute cmd fail\n");
         }
 
+        $this->writePipe = $pipes[1];
         swoole_event_add($pipes[1], function ($fp) {
             $this->send(stream_get_contents($fp));
         });
@@ -57,7 +58,7 @@ class TailFile
         if (!$this->isStarted()) {
             return;
         }
-        swoole_event_del($this->rs->pipe);
+        swoole_event_del($this->writePipe);
         proc_close($this->rs);
         unset($this->rs);
     }
